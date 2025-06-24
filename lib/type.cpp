@@ -154,17 +154,17 @@ raw_ostream& operator<<(raw_ostream &os, const type &ty) {
   return os;
 }
 
-type getIntrinsicOp0Ty(IR::X86IntrinBinOp::Op op) {
+type getIntrinsicOp0Ty(IR::LoongArchIntrinBinOp::Op op) {
   return type::IntegerVectorizable(binop_shape_op0[op].first,
                                    binop_shape_op0[op].second);
 }
 
-type getIntrinsicOp1Ty(IR::X86IntrinBinOp::Op op) {
+type getIntrinsicOp1Ty(IR::LoongArchIntrinBinOp::Op op) {
   return type::IntegerVectorizable(binop_shape_op1[op].first,
                                    binop_shape_op1[op].second);
 }
 
-type getIntrinsicRetTy(IR::X86IntrinBinOp::Op op) {
+type getIntrinsicRetTy(IR::LoongArchIntrinBinOp::Op op) {
   return type::IntegerVectorizable(binop_shape_ret[op].first,
                                    binop_shape_ret[op].second);
 }

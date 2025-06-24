@@ -1,6 +1,7 @@
-[submodule "alive2"]
-	path = alive2
-	url = https://github.com/artagnon/alive2
 [submodule "llvm"]
 	path = llvm
 	url = https://github.com/llvm/llvm-project
+[submodule "alive2"]
+	path = alive2
+	url = https://github.com/tangaac/alive2.git
+	branch = loongarch

@@ -29,7 +29,7 @@ static expr preprocess(Transform &t, const set<expr> &qvars0,
 
   // eliminate all quantified boolean vars; Z3 gets too slow with those
   auto qvars = qvars0;
-  for (auto I = qvars.begin(); I != qvars.end(); ) {
+  for (auto I = qvars.begin(); I != qvars.end();) {
     auto &var = *I;
     if (!var.isBool()) {
       ++I;
@@ -45,11 +45,10 @@ static expr preprocess(Transform &t, const set<expr> &qvars0,
   return expr::mkForAll(qvars, std::move(e));
 }
 
-bool
-AliveEngine::compareFunctions(llvm::Function &Func1, llvm::Function &Func2) {
+bool AliveEngine::compareFunctions(llvm::Function &Func1,
+                                   llvm::Function &Func2) {
   smt::smt_initializer smt_init;
   llvm_util::Verifier verifier(TLI, smt_init, *debug);
-  verifier.quiet = false;
   verifier.compareFunctions(Func1, Func2);
 
   return verifier.num_correct;
@@ -57,11 +56,11 @@ AliveEngine::compareFunctions(llvm::Function &Func1, llvm::Function &Func2) {
 
 Errors
 AliveEngine::find_model(Transform &t,
-                        unordered_map<const IR::Value*, smt::expr> &result) {
+                        unordered_map<const IR::Value *, smt::expr> &result) {
 
   t.preprocess();
   t.tgt.syncDataWithSrc(t.src);
-  calculateAndInitConstants(t);
+  // calculateAndInitConstants(t);
 
   TransformPrintOpts print_opts;
   t.print(*debug, print_opts);
@@ -89,7 +88,7 @@ AliveEngine::find_model(Transform &t,
   Errors errs;
 
   for (auto &i : tgt_state.getFn().getInputs()) {
-    if (!dynamic_cast<const Input*>(&i))
+    if (!dynamic_cast<const Input *>(&i))
       continue;
 
     auto *val = tgt_state.at(i);
@@ -108,7 +107,8 @@ AliveEngine::find_model(Transform &t,
     }
 
     auto aty = ty.getAsAggregateType();
-    if (ty.isVectorType() && (aty->getChild(0).isIntType() || aty->getChild(0).isFloatType())) {
+    if (ty.isVectorType() &&
+        (aty->getChild(0).isIntType() || aty->getChild(0).isFloatType())) {
       for (unsigned I = 0; I < aty->numElementsConst(); ++I) {
         qvars.insert(aty->extract(val->val, I, false).value);
       }
@@ -135,16 +135,16 @@ AliveEngine::find_model(Transform &t,
     return axioms_expr && preprocess(t, qvars, uvars, std::move(fml));
   };
 
-
   const IR::Type &ty = t.src.getType();
-  auto [poison_cnstr, value_cnstr] = ty.refines(src_state, tgt_state, sv.val, tv.val);
+  auto [poison_cnstr, value_cnstr] =
+      ty.refines(src_state, tgt_state, sv.val, tv.val);
   expr dom = dom_a && dom_b;
 
-/*  auto src_mem = src_state.returnMemory();
-  auto tgt_mem = tgt_state.returnMemory();
-  auto [memory_cnstr0, ptr_refinement0, mem_undef]
-    = src_mem.refined(tgt_mem, false);
-  qvars.insert(mem_undef.begin(), mem_undef.end());*/
+  /*  auto src_mem = src_state.returnMemory();
+    auto tgt_mem = tgt_state.returnMemory();
+    auto [memory_cnstr0, ptr_refinement0, mem_undef]
+      = src_mem.refined(tgt_mem, false);
+    qvars.insert(mem_undef.begin(), mem_undef.end());*/
 
   // TODO: dom check seems redundant
   // TODO: add memory back here
@@ -179,16 +179,16 @@ AliveEngine::find_model(Transform &t,
   auto &m = r.getModel();
   s << ";result\n";
   for (auto &i : tgt_state.getFn().getInputs()) {
-    if (!dynamic_cast<const Input*>(&i) &&
-        !dynamic_cast<const ConstantInput*>(&i))
-        continue;
+    if (!dynamic_cast<const Input *>(&i) &&
+        !dynamic_cast<const ConstantInput *>(&i))
+      continue;
 
     auto *val = tgt_state.at(i);
     if (!val)
       continue;
 
     if (i.getName().rfind("%_reservedc", 0) == 0) {
-      auto In = dynamic_cast<const Input*>(&i);
+      auto In = dynamic_cast<const Input *>(&i);
       result[In] = m.eval(val->val.value, true);
       s << i << " = ";
       tools::print_model_val(s, tgt_state, m, &i, i.getType(), val->val);
@@ -216,9 +216,9 @@ static const llvm::fltSemantics &getFloatSemantics(unsigned BitWidth) {
 }
 
 // call constant synthesizer and fill in constMap if synthesis suceeeds
-bool
-AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
-   unordered_map<llvm::Argument*, llvm::Constant*>& ConstMap) {
+bool AliveEngine::constantSynthesis(
+    llvm::Function &src, llvm::Function &tgt,
+    unordered_map<llvm::Argument *, llvm::Constant *> &ConstMap) {
 
   std::optional<smt::smt_initializer> smt_init;
   smt_init.emplace();
@@ -231,7 +231,7 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
     return false;
   }
 
-  unordered_map<string, Argument*> Arguments;
+  unordered_map<string, Argument *> Arguments;
   for (auto &arg : tgt.args()) {
     string ArgName = "%" + string(arg.getName());
     if (ArgName.starts_with("%_reservedc")) {
@@ -243,7 +243,7 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
   t.src = std::move(*Func1);
   t.tgt = std::move(*Func2);
 
-  unordered_map<const IR::Value*, Argument*> Inputs;
+  unordered_map<const IR::Value *, Argument *> Inputs;
   for (auto &&I : t.tgt.getInputs()) {
     string InputName = I.getName();
 
@@ -253,7 +253,7 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
   }
 
   // assume type verifies
-  std::unordered_map<const IR::Value*, smt::expr> result;
+  std::unordered_map<const IR::Value *, smt::expr> result;
   Errors errs = find_model(t, result);
 
   bool ret(errs);
@@ -267,7 +267,7 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
     if (ty->isIntegerTy()) {
       IntegerType *ity = cast<IntegerType>(ty);
       ConstMap[I.second] =
-        ConstantInt::get(ity, result[I.first].numeral_string(), 10);
+          ConstantInt::get(ity, result[I.first].numeral_string(), 10);
     } else if (ty->isIEEELikeFPTy()) {
       unsigned bits = ty->getPrimitiveSizeInBits();
       APInt integer(bits, result[I.first].numeral_string(), 10);
@@ -279,8 +279,8 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
       FixedVectorType *vty = cast<FixedVectorType>(ty);
       auto ety = vty->getElementType();
       unsigned bits = vty->getScalarSizeInBits();
-      SmallVector<llvm::Constant*> v;
-      for (int i = vty->getElementCount().getKnownMinValue()-1; i >= 0; i --) {
+      SmallVector<llvm::Constant *> v;
+      for (int i = vty->getElementCount().getKnownMinValue() - 1; i >= 0; i--) {
         auto elem = flat.extract((i + 1) * bits - 1, i * bits);
         if (!elem.isConst())
           return false;
@@ -297,8 +297,7 @@ AliveEngine::constantSynthesis(llvm::Function &src, llvm::Function &tgt,
         }
       }
       ConstMap[I.second] = ConstantVector::get(v);
-    }
-    else {
+    } else {
       UNREACHABLE();
     }
   }

@@ -18,7 +18,6 @@ extern bool debug_codegen;
 extern bool debug_parser;
 extern bool ignore_machine_cost;
 extern bool smt_verbose;
-extern bool disable_avx512;
 extern bool show_stats;
 extern bool return_first_solution;
 

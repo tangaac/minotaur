@@ -33,84 +33,82 @@ namespace fs = std::filesystem;
 
 namespace {
 
-llvm::cl::opt<unsigned> smt_to(
-    "minotaur-query-to",
-    llvm::cl::desc("minotaur: timeout for SMT queries"),
-    llvm::cl::init(60), llvm::cl::value_desc("s"));
+llvm::cl::opt<unsigned>
+    smt_to("minotaur-query-to",
+           llvm::cl::desc("minotaur: timeout for SMT queries"),
+           llvm::cl::init(60), llvm::cl::value_desc("s"));
 
-llvm::cl::opt<unsigned> slice_to(
-    "minotaur-slice-to",
-    llvm::cl::desc("minotaur: timeout per slice"),
-    llvm::cl::init(300), llvm::cl::value_desc("s"));
+llvm::cl::opt<unsigned> slice_to("minotaur-slice-to",
+                                 llvm::cl::desc("minotaur: timeout per slice"),
+                                 llvm::cl::init(300),
+                                 llvm::cl::value_desc("s"));
 
-llvm::cl::opt<bool> smt_verbose(
-    "minotaur-smt-verbose",
-    llvm::cl::desc("minotaur: SMT verbose mode"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool> smt_verbose("minotaur-smt-verbose",
+                                llvm::cl::desc("minotaur: SMT verbose mode"),
+                                llvm::cl::init(false));
 
-llvm::cl::opt<bool> enable_caching(
-    "minotaur-enable-caching",
-    llvm::cl::desc("minotaur: enable result caching"),
-    llvm::cl::init(true));
+llvm::cl::opt<bool>
+    enable_caching("minotaur-enable-caching",
+                   llvm::cl::desc("minotaur: enable result caching"),
+                   llvm::cl::init(true));
 
-llvm::cl::opt<bool> ignore_mca(
-    "minotaur-ignore-machine-cost",
-    llvm::cl::desc("minotaur: ignore llvm-mca cost model"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    ignore_mca("minotaur-ignore-machine-cost",
+               llvm::cl::desc("minotaur: ignore llvm-mca cost model"),
+               llvm::cl::init(false));
 
-llvm::cl::opt<bool> debug_enumerator(
-    "minotaur-debug-enumerator",
-    llvm::cl::desc("minotaur: enable enumerator debug output"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    debug_enumerator("minotaur-debug-enumerator",
+                     llvm::cl::desc("minotaur: enable enumerator debug output"),
+                     llvm::cl::init(false));
 
-llvm::cl::opt<bool> debug_slicer(
-    "minotaur-debug-slicer",
-    llvm::cl::desc("minotaur: enable slicer debug output"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    debug_slicer("minotaur-debug-slicer",
+                 llvm::cl::desc("minotaur: enable slicer debug output"),
+                 llvm::cl::init(false));
 
-llvm::cl::opt<bool> debug_tv(
-    "minotaur-debug-tv",
-    llvm::cl::desc("minotaur: enable alive2 debug output"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    debug_tv("minotaur-debug-tv",
+             llvm::cl::desc("minotaur: enable alive2 debug output"),
+             llvm::cl::init(false));
 
-llvm::cl::opt<bool> debug_codegen(
-    "minotaur-debug-codegen",
-    llvm::cl::desc("minotaur: enable alive2 debug output"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    debug_codegen("minotaur-debug-codegen",
+                  llvm::cl::desc("minotaur: enable alive2 debug output"),
+                  llvm::cl::init(false));
 
-llvm::cl::opt<bool> debug_parser(
-    "minotaur-debug-parser",
-    llvm::cl::desc("minotaur: enable alive2 debug output"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    debug_parser("minotaur-debug-parser",
+                 llvm::cl::desc("minotaur: enable alive2 debug output"),
+                 llvm::cl::init(false));
 
-llvm::cl::opt<unsigned> redis_port(
-    "minotaur-redis-port",
-    llvm::cl::desc("redis port number"),
-    llvm::cl::init(6379));
+llvm::cl::opt<unsigned> redis_port("minotaur-redis-port",
+                                   llvm::cl::desc("redis port number"),
+                                   llvm::cl::init(6379));
 
-llvm::cl::opt<bool> no_infer(
-    "minotaur-no-infer",
-    llvm::cl::desc("minotaur: do not run synthesizer"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool> no_infer("minotaur-no-infer",
+                             llvm::cl::desc("minotaur: do not run synthesizer"),
+                             llvm::cl::init(false));
 
-llvm::cl::opt<bool> no_slice(
-    "minotaur-no-slice",
-    llvm::cl::desc("minotaur: do not run slicer"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool> no_slice("minotaur-no-slice",
+                             llvm::cl::desc("minotaur: do not run slicer"),
+                             llvm::cl::init(false));
 
-llvm::cl::opt<bool> force_infer(
-    "minotaur-force-infer",
-    llvm::cl::desc("minotaur: force infer even if cache hits"),
-    llvm::cl::init(false));
+llvm::cl::opt<bool>
+    force_infer("minotaur-force-infer",
+                llvm::cl::desc("minotaur: force infer even if cache hits"),
+                llvm::cl::init(false));
 
 llvm::cl::opt<string> report_dir("minotaur-report-dir",
-  llvm::cl::desc("Save report to disk"), llvm::cl::value_desc("directory"));
+                                 llvm::cl::desc("Save report to disk"),
+                                 llvm::cl::value_desc("directory"));
 
 static bool dom_check(llvm::Value *V, const DominatorTree &DT, llvm::Use &U) {
-  if (auto I = dyn_cast<Instruction> (V)) {
+  if (auto I = dyn_cast<Instruction>(V)) {
     for (auto &op : I->operands()) {
-      if (auto opI = dyn_cast<Instruction> (op)) {
-        if (!DT.dominates(opI, U)) return false;
+      if (auto opI = dyn_cast<Instruction>(op)) {
+        if (!DT.dominates(opI, U))
+          return false;
       }
     }
   }
@@ -118,20 +116,18 @@ static bool dom_check(llvm::Value *V, const DominatorTree &DT, llvm::Use &U) {
 }
 
 struct debug {
-template<class T>
-debug &operator<<(const T &s)
-{
-  if (debug_enumerator || debug_slicer || debug_tv || debug_codegen)
-    minotaur::config::dbg()<<s;
-  return *this;
-}
+  template <class T> debug &operator<<(const T &s) {
+    if (debug_enumerator || debug_slicer || debug_tv || debug_codegen)
+      minotaur::config::dbg() << s;
+    return *this;
+  }
 };
 
-static optional<Rewrite>
-infer(Function &F, Instruction *I, redisContext *ctx, Enumerator &EN, parse::Parser &P) {
+static optional<Rewrite> infer(Function &F, Instruction *I, redisContext *ctx,
+                               Enumerator &EN, parse::Parser &P) {
   string bytecode;
   llvm::raw_string_ostream bs(bytecode);
-  //WriteBitcodeToFile(*F.getParent(), bs);
+  // WriteBitcodeToFile(*F.getParent(), bs);
   F.getParent()->print(bs, nullptr);
   bs.flush();
 
@@ -151,12 +147,12 @@ infer(Function &F, Instruction *I, redisContext *ctx, Enumerator &EN, parse::Par
     if (minotaur::hGet(bytecode.c_str(), bytecode.size(), rewrite, ctx)) {
       if (rewrite == "<no-sol>") {
         debug() << "[online] cache matched, but no solution found in "
-                    "previous run, skipping function: "
+                   "previous run, skipping function: "
                 << F.getName() << "\n";
         return nullopt;
       } else {
         debug() << "[online] cache matched, using previous solution for "
-                    "function: "
+                   "function: "
                 << F.getName() << "\n";
         RHSs = P.parse(F, rewrite);
         if (RHSs.empty()) {
@@ -169,9 +165,8 @@ infer(Function &F, Instruction *I, redisContext *ctx, Enumerator &EN, parse::Par
     }
   }
 
-
   if (no_infer) {
-  // in no_infer mode, we write no-sol and return
+    // in no_infer mode, we write no-sol and return
     if (enable_caching) {
       hSetNoSolution(bytecode.c_str(), bytecode.size(), ctx, F.getName());
     }
@@ -194,14 +189,13 @@ infer(Function &F, Instruction *I, redisContext *ctx, Enumerator &EN, parse::Par
 
   // write back to cache
   if (!from_cache && enable_caching) {
-    debug()<<"[online] caching solution\n";
+    debug() << "[online] caching solution\n";
     string rewrite;
     raw_string_ostream rs(rewrite);
     R.I->print(rs);
     rs.flush();
-    hSetRewrite(bytecode.c_str(), bytecode.size(),
-                "", 0,
-                rewrite, ctx, R.CostAfter, R.CostBefore, F.getName());
+    hSetRewrite(bytecode.c_str(), bytecode.size(), "", 0, rewrite, ctx,
+                R.CostAfter, R.CostBefore, F.getName());
   }
   return R;
 }
@@ -211,12 +205,7 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
   // set up debug output
   raw_ostream *out_file = &errs();
   if (!report_dir.empty()) {
-    try {
-      fs::create_directories(report_dir.getValue());
-    } catch (...) {
-      cerr << "Alive2: Couldn't create report directory!" << endl;
-      exit(1);
-    }
+    fs::create_directories(report_dir.getValue());
 
     fs::path fname = "minotaur.txt";
     fs::path path = fs::path(report_dir.getValue()) / fname.filename();
@@ -240,7 +229,8 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
   config::set_debug(*out_file);
 
   debug() << "[online] minotaur version " << config::minotaur_version << " "
-          << "working on source: " << F.getParent()->getSourceFileName() << "\n";
+          << "working on source: " << F.getParent()->getSourceFileName()
+          << "\n";
 
   debug() << "[online] working on function: " << F.getName() << "\n";
   debug() << *F.getParent() << "\n";
@@ -268,7 +258,6 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
     // in this mode we assume only one return point, we do not run slicer,
     // we check if return value can be optimized
 
-
     std::unique_ptr<llvm::Module> m;
     ValueToValueMapTy vv;
     auto newM = CloneModule(*F.getParent(), vv);
@@ -295,7 +284,6 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
 
     Instruction *retI = dyn_cast<Instruction>(ret->getReturnValue());
 
-
     if (!retI) {
       debug() << "[online] return value is not an instruction, skipping\n";
       goto final;
@@ -308,7 +296,7 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
       goto final;
     }
 
-    unordered_set<llvm::Function*> IntrinDecls;
+    unordered_set<llvm::Function *> IntrinDecls;
     ValueToValueMapTy vmap;
     auto *V = LLVMGen(ret, IntrinDecls).codeGen(R->I, vmap);
     V = llvm::IRBuilder<>(ret).CreateBitCast(V, retI->getType());
@@ -334,9 +322,9 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
         if (!R.has_value())
           continue;
 
-        unordered_set<llvm::Function*> IntrinDecls;
+        unordered_set<llvm::Function *> IntrinDecls;
         Instruction *insertpt = I.getNextNode();
-        while(isa<PHINode>(insertpt)) {
+        while (isa<PHINode>(insertpt)) {
           insertpt = insertpt->getNextNode();
         }
 
@@ -344,7 +332,7 @@ static bool optimize_function(llvm::Function &F, const LoopInfo &LI,
         V = llvm::IRBuilder<>(insertpt).CreateBitCast(V, I.getType());
 
         I.replaceUsesWithIf(V, [&changed, &V, &DT](Use &U) {
-          if(dom_check(V, DT, U)) {
+          if (dom_check(V, DT, U)) {
             changed = true;
             return true;
           }

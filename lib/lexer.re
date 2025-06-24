@@ -192,7 +192,7 @@ space+ {
 "fp128"  { return FP128; }
 
 
-"x86_" [a-zA-Z0-9_]+ { COPY_STR(); return X86BINARY; }
+"loongarch_" [a-zA-Z0-9_]+ { COPY_STR(); return LoongArchBINARY; }
 
 "%" [a-zA-Z0-9_.]+ {
   COPY_STR();

@@ -474,10 +474,10 @@ FPConversion *Parser::parse_fpconv(token op_token) {
   return T;
 }
 
-SIMDBinOpInst *Parser::parse_x86(string_view ops) {
-  IR::X86IntrinBinOp::Op op;
-  #define PROCESS(NAME,A,B,C,D,E,F) if (ops == #NAME) op = IR::X86IntrinBinOp::NAME;
-#include "ir/x86_intrinsics_binop.inc"
+SIMDBinOpInst *Parser::parse_loongarch(string_view ops) {
+  IR::LoongArchIntrinBinOp::Op op;
+  #define PROCESS(NAME,A,B,C,D,E,F) if (ops == #NAME) op = IR::LoongArchIntrinBinOp::NAME;
+#include "ir/loongarch_intrinsics_binop.inc"
 #undef PROCESS
 
   auto a = parse_expr();
@@ -626,8 +626,8 @@ Value* Parser::parse_expr() {
   case CONV_FPTOUI:
     return parse_fpconv(t);
 
-  case X86BINARY:
-    return parse_x86(yylval.str);
+  case LoongArchBINARY:
+    return parse_loongarch(yylval.str);
   case VAR:
     return parse_var();
   case CONST:

@@ -23,7 +23,6 @@ bool debug_codegen = false;
 bool debug_parser = false;
 bool ignore_machine_cost = false;
 bool smt_verbose = false;
-bool disable_avx512 = true;
 bool show_stats = false;
 bool return_first_solution = false;
 
