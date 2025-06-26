@@ -500,9 +500,8 @@ bool Enumerator::getSketches(llvm::Value *V, vector<Sketch> &sketches) {
     if (expected.isFP())
       continue;
     // typecheck for return val
-    X86IntrinBinOp::Op op = static_cast<X86IntrinBinOp::Op>(K);
-    if (config::disable_avx512 && SIMDBinOpInst::is512(op))
-      continue;
+    LoongArchIntrinBinOp::Op op = static_cast<LoongArchIntrinBinOp::Op>(K);
+
     type ret_ty = getIntrinsicRetTy(op);
     type op0_ty = getIntrinsicOp0Ty(op);
     type op1_ty = getIntrinsicOp1Ty(op);

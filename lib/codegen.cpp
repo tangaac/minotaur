@@ -12,7 +12,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Intrinsics.h"
-#include "llvm/IR/IntrinsicsX86.h"
+#include "llvm/IR/IntrinsicsLoongArch.h"
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -39,21 +39,21 @@ namespace minotaur {
 
 static constexpr llvm::Intrinsic::ID IntrinsicBinOpIDs[] = {
 #define PROCESS(NAME,A,B,C,D,E,F) llvm::Intrinsic::NAME,
-#include "ir/x86_intrinsics_binop.inc"
+#include "ir/loongarch_intrinsics_binop.inc"
 #undef PROCESS
 };
 
-static llvm::Intrinsic::ID getIntrinsicID(IR::X86IntrinBinOp::Op op) {
+static llvm::Intrinsic::ID getIntrinsicID(IR::LoongArchIntrinBinOp::Op op) {
   return IntrinsicBinOpIDs[op];
 }
 
 static constexpr llvm::Intrinsic::ID IntrinsicTerOpIDs[] = {
 #define PROCESS(NAME,A,B,C,D,E,F,G,H) llvm::Intrinsic::NAME,
-#include "ir/x86_intrinsics_terop.inc"
+#include "ir/loongarch_intrinsics_terop.inc"
 #undef PROCESS
 };
 
-static llvm::Intrinsic::ID getIntrinsicID(IR::X86IntrinTerOp::Op op) {
+static llvm::Intrinsic::ID getIntrinsicID(IR::LoongArchIntrinTerOp::Op op) {
   return IntrinsicTerOpIDs[op];
 }
 

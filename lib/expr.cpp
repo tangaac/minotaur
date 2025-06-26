@@ -156,10 +156,10 @@ void SIMDBinOpInst::print(raw_ostream &os) const {
   const char *name;
   switch (op) {
 #define PROCESS(NAME, A, B, C, D, E, F)                                        \
-  case IR::X86IntrinBinOp::NAME:                                               \
+  case IR::LoongArchIntrinBinOp::NAME:                                               \
     name = #NAME;                                                              \
     break;
-#include "ir/x86_intrinsics_binop.inc"
+#include "ir/loongarch_intrinsics_binop.inc"
 #undef PROCESS
   }
   os << "(" << name << " ";

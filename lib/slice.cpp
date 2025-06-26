@@ -45,7 +45,7 @@ static bool isUnsupportedTy(llvm::Type *ty) {
   Type *vsty = ty->getScalarType();
   return ty->isStructTy() || vsty->isPointerTy() ||
          (vsty->isFloatingPointTy() && !vsty->isIEEELikeFPTy()) ||
-         ty->isScalableTy() || vsty->isTargetExtTy() || vsty->isX86_AMXTy();
+         ty->isScalableTy() || vsty->isTargetExtTy();
 }
 
 static bool walk(BasicBlock *current, BasicBlock *target,

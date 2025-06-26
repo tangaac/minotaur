@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS_RELEASE        "-O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -g")
 
 set(LLVM_ENABLE_RTTI ON CACHE BOOL "Build LLVM with RTTI")
-set(LLVM_TARGETS_TO_BUILD X86 CACHE STRING "Build only the X86 target in LLVM")
+set(LLVM_TARGETS_TO_BUILD LoongArch CACHE STRING "Build only the LoongArch target in LLVM")
 set(LLVM_ENABLE_PROJECTS clang CACHE STRING "Build clang as well")
 set(LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "Enable assertions in LLVM")
 set(BUILD_TV ON CACHE BOOL "Build alive2-tv")
@@ -121,6 +121,7 @@ add_library(synthesizer STATIC ${SYNTHESIZER_SRC})
 target_link_libraries(synthesizer PRIVATE utils cost config)
 
 add_llvm_library(online MODULE "pass/online.cpp")
+target_compile_options(online PRIVATE -fexceptions)
 
 target_link_libraries(online
   PRIVATE synthesizer slice ${ALIVE_LIBS} ${Z3_LIBRARIES}

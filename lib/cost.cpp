@@ -16,6 +16,7 @@
 
 #include <fstream>
 #include <map>
+#include <unistd.h>
 
 using namespace llvm;
 using namespace std;
@@ -61,7 +62,7 @@ unsigned get_machine_cost(Function *F) {
     raw_fd_ostream InputFile(InputFD, true,true);
     InputFile << module_str;
     InputFile.close();
-    ::close(InputFD);
+    close(InputFD);
   }
 
   SmallString<64> OutputPath;
@@ -71,7 +72,7 @@ unsigned get_machine_cost(Function *F) {
           sys::fs::createTemporaryFile("output", "out", OutputFD, OutputPath)) {
       llvm::report_fatal_error("cannot open output buffer");
     }
-    ::close(OutputFD);
+    close(OutputFD);
   }
 
   vector<StringRef> ArgPtrs = {"get-cost", InputPath};

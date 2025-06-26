@@ -32,7 +32,7 @@ public:
 
     for (auto &arg : VF.args()) {
       auto argTy = arg.getType();
-      if (argTy->isPPC_FP128Ty() || argTy->isX86_FP80Ty())
+      if (argTy->isPPC_FP128Ty())
         discarded_at_precheck = true;
     }
 
